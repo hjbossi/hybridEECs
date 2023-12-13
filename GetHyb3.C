@@ -3,7 +3,7 @@
 #include <math.h>
 #include "TMath.h"
 
-void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifwake, bool ifnowake)
+void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifwake, bool ifnowake, bool ifdivide)
 {
     
     
@@ -59,27 +59,23 @@ void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifw
     new_bins_const[i] = (from_const + i * width_const);
     }
     
-//    eeec_diff_3 = (TH3D*)eeec_pt_hist->Clone("diff");
-//    eeec_diff = (TH2D*)eeec_pt_hist->Project3D("yx");
-    eeec_diff_3 = new TH3D("eeec_diff","Vac-Wake",20, new_binsR, 20, new_binsRs, 48, new_bins_const);
 
-    
     if (ifgamma == false)
     {
         cout<<"Inclusive"<<endl;
-        fvac = TFile::Open("./Hybrid_Vac_hadron_passedjets_Vac_1203_67.root");
-        fnw = TFile::Open("./Hybrid_hadron_passedjets_nowake_1203_67.root");
-        fwake = TFile::Open("./Hybrid_hadron_passedjets_yeswake_1211_67.root");
+        fvac = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_Vac_hadron_passedjets_Vac_1211_67.root");
+        fwake = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_hadron_passedjets_yeswake_1211_67.root");
+        fnw = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_hadron_passedjets_nowake_1203_67.root");
     }
     else{
         cout<<"Gamma"<<endl;
-        fvac = TFile::Open("./Hybrid_Vac_hadron_gamma_Vac_1129_23.root");
-        fnw = TFile::Open("./Hybrid_hadron_gamma_nowake_1129_23.root");
-        fwake = TFile::Open("./Hybrid_hadron_gamma_yeswake_1129_23.root");
+        fvac = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_Vac_hadron_gamma_Vac_1129_23.root");
+        fnw = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_hadron_gamma_nowake_1129_23.root");
+        fwake = TFile::Open("/Users/ar2545/Desktop/hybdat/Hybrid_hadron_gamma_yeswake_1129_23.root");
     }
     
      cout<<"low  "<<endl;
-    
+     TCanvas *cpt = new TCanvas();//for drawing jet pt
     if (fvac)
     {
         
@@ -87,149 +83,169 @@ void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifw
         {
             if(ifvac==true)
             {
-             cout<<"low  "<<endl;
+                cout<<"low  "<<endl;
                 jet_pt_dat = (TH1D*)fvac->Get("gam_jet_pt_hist");
                 eeec_pt_hist = (TH3D*)fvac->Get("eeec_pt_hist");
                 eeec_pt_hist->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
                 eeec_r_slice= (TH2D*)eeec_pt_hist->Project3D("yx");
-                 cout<<"low  "<<endl;
-                 
+                cout<<"low  "<<endl;
+                
             }
             else if(ifwake==true)
             {
-             cout<<"low  "<<endl;
+                cout<<"low  "<<endl;
                 jet_pt_dat_wake = (TH1D*)fwake->Get("gam_jet_pt_hist");
                 eeec_pt_hist_wake = (TH3D*)fwake->Get("eeec_pt_hist");
+                eeec_pt_hist_wake->SetName("eeec_pt_hist_wake");
                 eeec_pt_hist_wake->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
                 eeec_r_slice_wake= (TH2D*)eeec_pt_hist_wake->Project3D("yx");
-                 cout<<"low  "<<endl;
+                cout<<"low  "<<endl;
             }
             else
             {
-             cout<<"low  "<<endl;
+                cout<<"low  "<<endl;
                 jet_pt_dat_nw = (TH1D*)fnw->Get("gam_jet_pt_hist");
                 eeec_pt_hist_nw = (TH3D*)fnw->Get("eeec_pt_hist");
+                eeec_pt_hist_nw->SetName("eeec_pt_hist_nw");
                 eeec_pt_hist_nw->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
                 eeec_r_slice_nw = (TH2D*)eeec_pt_hist_nw->Project3D("yx");
-                 cout<<"low  "<<endl;
+                cout<<"low  "<<endl;
             }
         }
         else
         {
-            if(ifvac==true)
-            {
-            cout<<"low  "<<endl;
+            
                 jet_pt_dat = (TH1D*)fvac->Get("jet_pt_hist");
                 jet_pt_dat->SetMarkerStyle(kOpenSquare);
+                jet_pt_dat->SetStats(0);
                 
                 eeec_pt_hist = (TH3D*)fvac->Get("eeec_pt_hist");
                 eeec_pt_hist->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
                 eeec_r_slice= (TH2D*)eeec_pt_hist->Project3D("yx");
-                cout<<"low  "<<endl;
-            }
-            if(ifwake==true)
-            {
-            cout<<"low  "<<endl;
-            cout<<"here"<<endl;
+                eeec_r_slice->Scale(1./jet_pt_dat->Integral(pt1_bin_dat,pt2_bin_dat),"width");
+                
+            
+                cout<<"wake "<<endl;
+                
                 jet_pt_dat_wake = (TH1D*)fwake->Get("jet_pt_hist");
+                jet_pt_dat_wake->SetName("jet_pt_hist_wake");
                 jet_pt_dat_wake->SetLineColor(kRed);
                 jet_pt_dat_wake->SetMarkerColor(kRed);
                 jet_pt_dat_wake->SetMarkerStyle(kFullCircle);
                 
+                jet_pt_dat_wake->SetStats(0);
+//                jet_pt_dat_wake->Draw();
+                
                 eeec_pt_hist_wake = (TH3D*)fwake->Get("eeec_pt_hist");
+                eeec_pt_hist_wake->SetName("eeec_pt_hist_wake");
                 eeec_pt_hist_wake->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
                 eeec_r_slice_wake= (TH2D*)eeec_pt_hist_wake->Project3D("yx");
-                cout<<"low  "<<endl;
-            }
-            if(ifnowake==true)
-            {
-            cout<<"low  "<<endl;
+                eeec_r_slice_wake->Scale(1./jet_pt_dat_wake->Integral(pt1_bin_dat,pt2_bin_dat),"width");
+            
+                cout<<"no wake "<<endl;
                 jet_pt_dat_nw = (TH1D*)fnw->Get("jet_pt_hist");
+                jet_pt_dat_nw->SetName("jet_pt_hist_nw");
                 jet_pt_dat_nw->SetLineColor(kGreen+2);
                 jet_pt_dat_nw->SetMarkerColor(kGreen+2);
                 jet_pt_dat_nw->SetMarkerStyle(22);
                 
+                jet_pt_dat_nw->SetStats(0);
+//                jet_pt_dat_nw->Draw();
+                
                 eeec_pt_hist_nw = (TH3D*)fnw->Get("eeec_pt_hist");
                 eeec_pt_hist_nw->GetZaxis()->SetRange(pt1_bin_dat,pt2_bin_dat);
+                eeec_pt_hist_nw->SetName("eeec_pt_hist_nw");
                 eeec_r_slice_nw = (TH2D*)eeec_pt_hist_nw->Project3D("yx");
-                cout<<"low  "<<endl;
-            }
+                eeec_r_slice_nw->Scale(1./jet_pt_dat_nw->Integral(pt1_bin_dat,pt2_bin_dat),"width");
+
+           
         }
-        cout<<"heregain"<<endl;
-//        jet_pt_dat->RebinX(20);
-        TCanvas *cpt = new TCanvas();
-//        jet_pt_dat->SetMaximum(1);
-//        jet_pt_dat->SetMinimum(1e-8);
-        jet_pt_dat->SetStats(0);
-        jet_pt_dat->Draw();
-        cout<<"heregain"<<endl;
-    
-         ////Getting bin edges
-        float low_pt = eeec_pt_hist->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
-        float high_pt = eeec_pt_hist->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
-        
-        float low_pt_wake = eeec_pt_hist_wake->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
-        float high_pt_wake = eeec_pt_hist_wake->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
-        
-        float low_pt_nw = eeec_pt_hist_nw->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
-        float high_pt_nw = eeec_pt_hist_nw->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
-        
-        float low_pt_jet = jet_pt_dat->GetXaxis()->GetBinLowEdge(pt1_bin_dat);
-        float high_pt_jet = jet_pt_dat->GetXaxis()->GetBinUpEdge(pt2_bin_dat);
-        
-        //checking if axes are same on both plots
-        cout<<"low  "<<low_pt<<endl;
-        cout<<"high  "<<high_pt<<endl;
-        cout<<"low  "<<low_pt_jet<<endl;
-        cout<<"high  "<<high_pt_jet<<endl;
         
         
-        double num_jets_dat = 0;
-        double num_entries_dat = 0;
-       
-        for (int i=pt1_bin_dat; i<=pt2_bin_dat; i++)
+        float low_pt, high_pt, low_pt_wake,high_pt_wake,low_pt_nw,high_pt_nw,low_pt_jet,high_pt_jet,low_pt_jet_wake,high_pt_jet_wake,low_pt_jet_nw,high_pt_jet_nw;
+        double num_entries_dat, num_entries_dat_wake, num_entries_dat_nw;
+        double num_jets_dat, num_jets_dat_wake, num_jets_dat_nw;
+        ////Getting bin edges
+        if(ifvac==true)
         {
-            num_entries_dat = jet_pt_dat->GetBinContent(i);
-            num_jets_dat += num_entries_dat;
+        jet_pt_dat->Draw();
+            low_pt = eeec_pt_hist->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt = eeec_pt_hist->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
+            low_pt_jet = jet_pt_dat->GetXaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt_jet = jet_pt_dat->GetXaxis()->GetBinUpEdge(pt2_bin_dat);
             
+            cout<<"low 2d "<<low_pt<<endl;
+            cout<<"high 2d "<<high_pt<<endl;
+            
+            cout<<"low jet "<<low_pt_jet<<endl;
+            cout<<"high jet  "<<high_pt_jet<<endl;
+            
+            for (int i=pt1_bin_dat; i<=pt2_bin_dat; i++)
+            {
+                num_entries_dat = jet_pt_dat->GetBinContent(i);
+                num_jets_dat += num_entries_dat;
+                
+            }
+            cout <<"num dat no overflow "<<num_jets_dat<<endl;
         }
-        cout <<"num dat no overflow "<<num_jets_dat<<endl;
-        //        TCanvas *cfnew = new TCanvas();
-        //        TH1D *eeec_r_slice_phi= eeec_r_slice->ProjectionX("eeec_phi",1,2);
-        //        TH1D *eeec_r_slice_phi1= eeec_r_slice->ProjectionX("eeec_phi1",3,4);
-        //        eeec_r_slice_phi->Draw();
-        //        eeec_r_slice_phi1->SetLineColor(kRed);
-        //        eeec_r_slice_phi1->Draw("SAME");
-        //        eeec_r_slice_phi1->Draw("SAME");
+        if(ifwake==true)
+        {
+        jet_pt_dat_wake->Draw();
+        jet_pt_dat->Draw("SAME");
+            low_pt_wake = eeec_pt_hist_wake->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt_wake = eeec_pt_hist_wake->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
+            low_pt_jet_wake = jet_pt_dat_wake->GetXaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt_jet_wake = jet_pt_dat_wake->GetXaxis()->GetBinUpEdge(pt2_bin_dat);
+            
+            cout<<"low 2d "<<low_pt_wake<<endl;
+            cout<<"high 2d "<<high_pt_wake<<endl;
+            
+            cout<<"low jet "<<low_pt_jet_wake<<endl;
+            cout<<"high jet  "<<high_pt_jet_wake<<endl;
+            
+            for (int i=pt1_bin_dat; i<=pt2_bin_dat; i++)
+            {
+                num_entries_dat_wake = jet_pt_dat_wake->GetBinContent(i);
+                num_jets_dat_wake += num_entries_dat_wake;
+                
+            }
+            cout <<"num dat no overflow "<<num_jets_dat_wake<<endl;
+        }
+        if(ifnowake==true)
+        {
+        jet_pt_dat_nw->Draw();
+            low_pt_nw = eeec_pt_hist_nw->GetZaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt_nw = eeec_pt_hist_nw->GetZaxis()->GetBinUpEdge(pt2_bin_dat);
+            low_pt_jet_nw = jet_pt_dat_nw->GetXaxis()->GetBinLowEdge(pt1_bin_dat);
+            high_pt_jet_nw = jet_pt_dat_nw->GetXaxis()->GetBinUpEdge(pt2_bin_dat);
+            
+            cout<<"low 2d "<<low_pt_nw<<endl;
+            cout<<"high 2d "<<high_pt_nw<<endl;
+            
+            cout<<"low jet "<<low_pt_jet_nw<<endl;
+            cout<<"high jet  "<<high_pt_jet_nw<<endl;
+            
+            for (int i=pt1_bin_dat; i<=pt2_bin_dat; i++)
+            {
+                num_entries_dat_nw = jet_pt_dat_nw->GetBinContent(i);
+                num_jets_dat_nw += num_entries_dat_nw;
+                
+            }
+            cout <<"num dat no overflow "<<num_jets_dat_nw<<endl;
+        }
+    
         
-        
-        
-        //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx//
-        //DEFINING ALL PLOTS WITH CORRECT AXES AND SCALINGS
-        //2D plots if needed
-        //                TCanvas *c = new TCanvas();
-        //                eec_pt_2d_dat->Draw("LEGO1");
-        //                //Jet spectrum
-        //                        TCanvas *cpt = new TCanvas();
-        //                        jet_pt_dat->Draw();
-        jet_pt_dat->GetXaxis()->SetTitle("pT (GeV/c)");
-        jet_pt_dat->GetYaxis()->SetTitle("Entries");
-        double entries = jet_pt_dat->GetEntries();
-        cout<<"all entries data "<<entries<<endl;
-        
-        
-       
         //-------------Defining global attributes of plots------------------------------
- 
+        
         //Writing pT range on plots
-         TLatex latex, latex1, latex2, latex3, latex4, latex5;
+        TLatex latex, latex1, latex2, latex3, latex4, latex5;
         latex.SetTextColor(kWhite);
         latex1.SetTextColor(kWhite);
         latex2.SetTextColor(kWhite);
         latex3.SetTextColor(kWhite);
         latex4.SetTextColor(kWhite);
         latex5.SetTextColor(kWhite);
-         latex.SetNDC ();
+        latex.SetNDC ();
         //               const char *str = "p^{ch}_{T,jet}";
         const char *str = "p_{T,jet}";
         latex.SetTextSize(0.04);
@@ -243,7 +259,7 @@ void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifw
         const char *str1 = "p^{ch}_{T,min}";
         latex1.SetTextSize(0.04);
         //Writing jet algorithm
-       
+        
         latex2.SetTextFont(42);
         latex2.SetTextAlign(50);
         latex2.SetNDC ();
@@ -279,96 +295,122 @@ void GetHyb3(int pt1_bin_dat, int pt2_bin_dat,bool ifgamma, bool ifvac, bool ifw
         line->SetLineWidth(2);
         line->SetLineStyle(7);
         
+        cout<<"made it here"<<endl;
+         //xxxxxxxxxxxxxxxxxxxxxxxxxxxx------------------Legends&Latex------------------------------xxxxxxxxxxxxxxxxxxxxxxxxxx//
+        latex.SetTextSize(0.03);latex1.SetTextSize(0.03);latex2.SetTextSize(0.03);latex3.SetTextSize(0.03);latex4.SetTextSize(0.03);latex5.SetTextSize(0.03);
         //xxxxxxxxxxxxxxxxxxxxxxxxxxxx------------------DATA/MC PLOTS------------------------------xxxxxxxxxxxxxxxxxxxxxxxxxx//
-        //        eeec_pt_hist->RebinY(2);
-        //        eeec_pt_hist->RebinX(2);
+        
         const char *strphi = "#phi";
         const char *strx = "#xi";
-        eeec_pt_hist->GetYaxis()->SetTitle(strphi);
-        eeec_pt_hist->GetYaxis()->LabelsOption("h");
-        eeec_pt_hist->GetXaxis()->SetTitle(strx);
-        eeec_pt_hist->GetXaxis()->LabelsOption("h");
         
         
-        TCanvas *cf = new TCanvas();
-        eeec_r_slice->SetStats(0);
-        eeec_r_slice->Scale(1./jet_pt_dat->Integral(pt1_bin_dat,pt2_bin_dat),"width");
-        eeec_r_slice_wake->Scale(1./jet_pt_dat_wake->Integral(pt1_bin_dat,pt2_bin_dat),"width");
-        eeec_r_slice_nw->Scale(1./jet_pt_dat_nw->Integral(pt1_bin_dat,pt2_bin_dat),"width");
+        TCanvas *cvac = new TCanvas();
+        TCanvas *cwake = new TCanvas();
+        TCanvas *cnw = new TCanvas();
         
-//        for(int i = 1; i<=eeec_r_slice->GetXaxis()->GetNbins(); i++)
-//        {
-//            for(int j = 1; j<=eeec_r_slice->GetYaxis()->GetNbins(); j++){
-//                cout<<i<<j<<endl;
-//                double value_vac = eeec_r_slice->GetBinContent(i,j);
-//                double value_wake = eeec_r_slice_wake->GetBinContent(i,j);
-//                double value = ((value_vac - value_wake)/value_vac);
-////                eeec_diff->SetBinContent(i,j,value);
-//                eeec_diff->SetBinContent(i,j,value);
-//
-//                cout<<eeec_r_slice->GetBinContent(i,j)<<endl;
-//                cout<<value_vac<<endl;
-//                cout<<"picl"<<endl;
-//                cout<<eeec_r_slice_wake->GetBinContent(i,j)<<endl;
-//                cout<<value_wake<<endl;
-////                cout<<"value in set"<<eeec_diff->GetBinContent(i,j)<<endl;
-////                 cout<<"value in set"<<eeec_r_slice_wake->GetBinContent(i,j)<<endl;
-//
-//            }
-//        }
-//         cout<<eeec_r_slice->GetMaximum()<<endl;
-//        cout<<eeec_r_slice->GetMinimum()<<endl;
-//        eeec_r_slice_wake->Add(eeec_r_slice, -1.0);
-//        eeec_r_slice->SetMaximum(0.0103458);
-//        eeec_r_slice->SetMinimum(0.00141669);
-        
-//        eeec_r_slice->SetMaximum(eeec_r_slice->GetMaximum());
-//        eeec_r_slice->SetMinimum(eeec_r_slice->GetMinimum());
-//
-        cout<<eeec_r_slice->GetMaximum()<<endl;
-        cout<<eeec_r_slice->GetMinimum()<<endl;
-        eeec_r_slice_wake->Draw("colz");
-//        eeec_diff->SetMaximum(eeec_diff->GetMaximum());
-//        eeec_diff->SetMinimum(eeec_diff->GetMinimum());
-//        eeec_diff->Draw("box");
-       
-       
-       //xxxxxxxxxxxxxxxxxxxxxxxxxxxx------------------Legends&Latex------------------------------xxxxxxxxxxxxxxxxxxxxxxxxxx//
-        latex.SetTextSize(0.03);latex1.SetTextSize(0.03);latex2.SetTextSize(0.03);latex3.SetTextSize(0.03);latex4.SetTextSize(0.03);latex5.SetTextSize(0.03);
-        
-        //    latex1.DrawLatex(0.60,0.70 ,Form("%s > 1 GeV/c", str1));
-        latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
-        latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+        if(ifvac==true)
+        {
+            cvac->cd();
+            eeec_r_slice->GetYaxis()->SetTitle(strphi);
+            eeec_r_slice->GetYaxis()->LabelsOption("h");
+            eeec_r_slice->GetXaxis()->SetTitle(strx);
+            eeec_r_slice->GetXaxis()->LabelsOption("h");
+            
+            eeec_r_slice->SetStats(0);
+            eeec_r_slice->Draw("colz");
+            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, vacuum"));
+            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt, str, high_pt));
+            latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
+            latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+             if(ifgamma==true)
+            {
+                latex4.DrawLatex(0.60,0.85 ,Form("%s - tagged", str6));
+               }
+            else{
+                latex4.DrawLatex(0.60,0.85 ,Form("Inclusive"));
+            }
+        }
+        if(ifwake==true)
+        {
+            cwake->cd();
+            eeec_r_slice_wake->GetYaxis()->SetTitle(strphi);
+            eeec_r_slice_wake->GetYaxis()->LabelsOption("h");
+            eeec_r_slice_wake->GetXaxis()->SetTitle(strx);
+            eeec_r_slice_wake->GetXaxis()->LabelsOption("h");
+            cout<<"here"<<endl;
+            
+            eeec_r_slice_wake->SetStats(0);
+            eeec_r_slice_wake->Draw("colz");
+            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, jet + wake"));
+            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt_wake, str, high_pt_wake));
+            latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
+            latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+             if(ifgamma==true)
+            {
+                latex4.DrawLatex(0.60,0.85 ,Form("%s - tagged", str6));
+               }
+            else{
+                latex4.DrawLatex(0.60,0.85 ,Form("Inclusive"));
+            }
+        }
+        if(ifnowake==true)
+        {
+            eeec_pt_hist_nw->GetYaxis()->SetTitle(strphi);
+            eeec_pt_hist_nw->GetYaxis()->LabelsOption("h");
+            eeec_pt_hist_nw->GetXaxis()->SetTitle(strx);
+            eeec_pt_hist_nw->GetXaxis()->LabelsOption("h");
+            
+            cnw->cd();
+            eeec_r_slice_nw->SetStats(0);
+            eeec_r_slice_nw->Draw("colz");
+            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, no wake"));
+            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt_nw, str, high_pt_nw));
+            latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
+            latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+            
+            if(ifgamma==true)
+            {
+                latex4.DrawLatex(0.60,0.85 ,Form("%s - tagged", str6));
+               }
+            else{
+                latex4.DrawLatex(0.60,0.85 ,Form("Inclusive"));
+            }
+        }
         
         if(ifgamma==true)
         {
             latex4.DrawLatex(0.60,0.85 ,Form("%s - tagged", str6));
-            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt, str7, high_pt));
+            //            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt, str7, high_pt));
         }
         else{
             latex4.DrawLatex(0.60,0.85 ,Form("Inclusive"));
-            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt, str, high_pt));
+            latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
+            latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+            //            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt, str, high_pt));
         }
         
-        if(ifvac==true)
+        TCanvas *cdiv = new TCanvas();
+        if(ifdivide == true)
         {
-            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, vacuum"));
-        }
-        else if(ifwake==true)
-        {
-            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, wake"));
-        }
-        else
-        {
-            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, no wake"));
+            cdiv->cd();
+            TH2D* eeec_r_slice_wake_cop =(TH2D*)eeec_r_slice_wake->Clone();
+            eeec_r_slice_wake_cop->Divide(eeec_r_slice);
+            cout<<eeec_r_slice_wake->GetEntries()<<endl;
+            eeec_r_slice_wake_cop->Draw("colz");
+            latex3.DrawLatex(0.60,0.80 ,Form("Hybrid Model, hadrons, jet+wake/jet"));
+            latex.DrawLatex(0.60,0.70 ,Form("%.1f GeV/c < %s < %.1f GeV/c", low_pt_wake, str, high_pt_wake));
+            latex2.DrawLatex(0.60,0.75 ,Form("%s , R = 0.8", str2));
+            latex4.DrawLatex(0.60,0.65 ,Form("0.6 < %s < 0.7 ", str4));
+            if(ifgamma==true)
+            {
+                latex4.DrawLatex(0.60,0.85 ,Form("%s - tagged", str6));
+            }
+            else{
+                latex4.DrawLatex(0.60,0.85 ,Form("Inclusive"));
+            }
         }
         
-        TLegend *legend_dat_rat = new TLegend(0.15,0.84,0.40,0.90);
-        
-        //        legend_dat_rat->SetBorderSize(0);
-        //        legend_dat_rat->SetTextFont(42);
-        //        legend_dat_rat->SetTextSize(0.035);
-        //legend_dat_rat->Draw();
+    
         
         
         if (!eeec_pt_hist)
