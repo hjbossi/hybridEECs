@@ -13,11 +13,14 @@ using namespace std;
 #include "TFile.h"
 #include "TRandom3.h"
 
-char* PARTICLES_FILE_NAME = "../../negative-subtraction/data/HYBRID_Hadrons_Subtracted_NoElastic_HighPt.out";
-char* OUT_FILE_NAME = "../data-unbiased-140-160-gev-jets/E3C_PBPB_SUBTRACTION_RADIUS_0.5.root";
-char* OUT_INFO_FILE_NAME = "../data-unbiased-140-160-gev-jets/E3C_PbPb_Subtraction_Radius_0.5_Info.out";
+char* PARTICLES_FILE_NAME = "../../common-data/HYBRID_Hadrons_NoElastic_HighPt.out";
+char* OUT_FILE_NAME = "../data-unbiased-140-160-gev-jets/E3C_PBPB_NO_WAKE.root";
+char* OUT_INFO_FILE_NAME = "../data-unbiased-140-160-gev-jets/E3C_PbPb_No_Wake_Info.out";
 int MAX_EVENTS = 10000000;
 bool NO_ANGLES = true;
+
+bool DO_NOT_INCLUDE_NEGATIVES = true;
+bool DO_NOT_INCLUDE_ANY_WAKE_PARTICLES = true;
 
 double JET_RADIUS = 0.8;
 double MIN_PT = 140.0;
@@ -150,7 +153,8 @@ vector< MyParticle > collectParticles(ifstream& file) {
         myParticle.X = X;
         myParticle.Y = Y;
         myParticle.shouldDisregard = false;
-        particles.push_back(myParticle);
+
+        if (!(myParticle.label == 2 && DO_NOT_INCLUDE_NEGATIVES) && !((label == 1 || label == 2) && DO_NOT_INCLUDE_ANY_WAKE_PARTICLES)) particles.push_back(myParticle);
 
         file >> temp; // Go to next line
     }
