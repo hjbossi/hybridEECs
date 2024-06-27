@@ -505,7 +505,7 @@ int main(int argc, char* argv[]) {
             //add particles to fjinput list 
             if(label != -2) //This excludes the hard parton that scatters from the jet 
             {
-                if(argu4.find(vac) != std::string::npos) //in case of vac include everything
+                if(argu5.find(vac) != std::string::npos) //in case of vac include everything
                 {
                     //  cout<<"a "<<a<<" label "<<label<<endl;
                     double E = sqrt((m*m)+(px*px+py*py+pz*pz));
